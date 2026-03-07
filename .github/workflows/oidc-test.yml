@@ -20,7 +20,8 @@ jobs:
       - name: Configure AWS credentials from GitHub OIDC
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::585881786588:role/eks-devsecops-lab-dev-github-app
+          role-to-assume: ${{ vars.AWS_GITHUB_APP_ROLE_ARN }}
           aws-region: eu-west-3
+          role-session-name: github-oidc-test
       - name: Verify AWS Identity
         run: aws sts get-caller-identity
