@@ -53,7 +53,6 @@ jobs:
           push: true
           tags: |
             ${{ steps.meta.outputs.image_uri }}:${{ steps.meta.outputs.short_sha }}
-            ${{ steps.meta.outputs.image_uri }}:latest
           labels:
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -64,4 +63,3 @@ jobs:
         run: |
           echo "Pushed image:"
           echo "${{ steps.meta.outputs.image_uri }}:${{ steps.meta.outputs.short_sha }}"
-          echo "${{ steps.meta.outputs.image_uri }}:latest"
