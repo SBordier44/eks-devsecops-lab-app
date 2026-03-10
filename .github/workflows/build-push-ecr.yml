@@ -54,6 +54,9 @@ jobs:
           tags: |
             ${{ steps.meta.outputs.image_uri }}:${{ steps.meta.outputs.short_sha }}
             ${{ steps.meta.outputs.image_uri }}:latest
+          labels:
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
