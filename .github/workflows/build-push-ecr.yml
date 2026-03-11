@@ -85,12 +85,6 @@ jobs:
           path: gitops
           token: ${{ secrets.GITOPS_REPO_TOKEN }}
 
-      - name: Debug workspace
-        run: |
-          pwd
-          ls -la
-          find . -maxdepth 3 -type d | sort
-
       - name: Setup Kustomize
         run: |
           curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
