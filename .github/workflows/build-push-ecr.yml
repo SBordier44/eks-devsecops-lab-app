@@ -13,7 +13,7 @@ permissions:
 env:
   AWS_REGION: eu-west-3
   ECR_REPOSITORY: eks-devsecops-lab-dev-app
-  GITOPS_REPO_NAME: SBordier44/eks-devsecops-lab-dev-gitops
+  GITOPS_REPO_NAME: SBordier44/eks-devsecops-lab-gitops
 
 jobs:
   build-and-push:
@@ -93,7 +93,7 @@ jobs:
       - name: Update image tag with Kustomize
         run: |
           cd gitops/apps/demo-app/overlays/dev
-          kustomize edit set image eks-devsecops-lab-dev-app=${{ needs.build-and-push.outputs.image_uri }}:${{ needs.build-and-push.outputs.short_sha }}
+          kustomize edit set image eks-devsecops-dev-app=${{ needs.build-and-push.outputs.image_uri }}:${{ needs.build-and-push.outputs.short_sha }}
 
       - name: Commit and push GitOps changes
         run: |
