@@ -80,7 +80,7 @@ jobs:
       - name: Checkout GitOps repository
         uses: actions/checkout@v6
         with:
-          repository: ${{ vars.GITOPS_REPO_NAME }}
+          repository: ${{ env.GITOPS_REPO_NAME }}
           ref: main
           path: gitops
           token: ${{ secrets.GITOPS_REPO_TOKEN }}
