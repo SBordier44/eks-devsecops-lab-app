@@ -1,18 +1,15 @@
 FROM golang:1.26-alpine AS builder
 
-WORKDIR /app
+WORKDIR /src
 
-COPY go.mod ./
-COPY main.go ./
+COPY . .
 
-RUN go build -o app main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o app main.go
 
-FROM alpine:3.23
+FROM gcr.io/distroless/static-debian13:nonroot
 
-WORKDIR /app
-
-COPY --from=builder /app/app /app/app
+COPY --from=builder /src/app /app
 
 EXPOSE 8080
 
-ENTRYPOINT ["/app/app"]
+ENTRYPOINT ["/app"]
