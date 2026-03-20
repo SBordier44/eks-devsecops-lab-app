@@ -14,6 +14,7 @@ env:
   AWS_REGION: eu-west-3
   ECR_REPOSITORY: eks-devsecops-lab-dev-app
   GITOPS_REPO_NAME: SBordier44/eks-devsecops-lab-gitops
+  KUSTOMIZE_VERSION: 5.8.1
 
 jobs:
   build-and-push:
@@ -87,8 +88,9 @@ jobs:
 
       - name: Setup Kustomize
         run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s -- "${{ env.KUSTOMIZE_VERSION }}"
           sudo mv kustomize /usr/local/bin/
+          kustomize version
 
       - name: Update image tag with Kustomize
         run: |
