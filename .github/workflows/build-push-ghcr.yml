@@ -22,6 +22,7 @@ jobs:
     outputs:
       short_sha: ${{ steps.meta.outputs.short_sha }}
       image_uri: ${{ steps.meta.outputs.image_uri }}
+      image_digest: ${{ steps.build.outputs.digest }}
 
     steps:
       - name: Checkout repository
@@ -47,6 +48,7 @@ jobs:
         uses: docker/setup-buildx-action@v4
 
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -62,10 +64,29 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Scan pushed image with Trivy
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          scan-type: image
+          image-ref: ${{ steps.meta.outputs.image_uri }}@${{ steps.build.outputs.digest }}
+          format: table
+          output: trivy-image-report.txt
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show Trivy report
+        run: cat trivy-image-report.txt
+
       - name: Show published image
         run: |
           echo "Pushed image:"
           echo "${{ steps.meta.outputs.image_uri }}:${{ steps.meta.outputs.short_sha }}"
+          echo "Digest:"
+          echo "${{ steps.build.outputs.digest }}"
 
   update-gitops:
     name: Update GitOps repository
