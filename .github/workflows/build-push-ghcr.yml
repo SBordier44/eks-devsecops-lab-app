@@ -89,7 +89,7 @@ jobs:
 
       - name: Update image tag with Kustomize
         run: |
-          cd gitops/apps/demo-app/overlays/dev
+          cd gitops/apps/demo-app/overlays/k3s-dev
           kustomize edit set image eks-devsecops-lab-dev-app=${{ needs.build-and-push.outputs.image_uri }}:${{ needs.build-and-push.outputs.short_sha }}
 
       - name: Commit and push GitOps changes
