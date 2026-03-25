@@ -13,8 +13,13 @@ func main() {
 		port = "8080"
 	}
 
+  demoMessage := os.Getenv("DEMO_MESSAGE")
+	if demoMessage == "" {
+		demoMessage = "demo-message-not-set"
+	}
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "eks-devsecops-lab app is running")
+		fmt.Fprintf(w, "eks-devsecops-lab app is running\nDEMO_MESSAGE=%s\n", demoMessage)
 	})
 
 	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
