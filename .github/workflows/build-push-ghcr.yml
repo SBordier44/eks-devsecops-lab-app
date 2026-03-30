@@ -10,6 +10,7 @@ permissions:
   contents: read
   packages: write
   security-events: write
+  id-token: write
 
 env:
   IMAGE_NAME: eks-devsecops-lab-dev-app
@@ -65,8 +66,26 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Generate image SBOM with Trivy
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          scan-type: image
+          image-ref: ${{ steps.meta.outputs.image_uri }}@${{ steps.build.outputs.digest }}
+          format: cyclonedx
+          output: trivy-image-sbom.cdx.json
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload image SBOM artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: trivy-image-sbom-${{ steps.meta.outputs.short_sha }}
+          path: trivy-image-sbom.cdx.json
+          retention-days: 30
+
       - name: Scan pushed image with Trivy
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           scan-type: image
           image-ref: ${{ steps.meta.outputs.image_uri }}@${{ steps.build.outputs.digest }}
@@ -86,7 +105,28 @@ jobs:
           sarif_file: trivy-image-results.sarif
           category: trivy-image
 
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.1.1
+
+      - name: Sign image with Cosign keyless
+        env:
+          IMAGE_REF: ${{ steps.meta.outputs.image_uri }}@${{ steps.build.outputs.digest }}
+        run: |
+          cosign sign --yes "${IMAGE_REF}"
+
+      - name: Verify image signature with Cosign
+        env:
+          IMAGE_REF: ${{ steps.meta.outputs.image_uri }}@${{ steps.build.outputs.digest }}
+          CERTIFICATE_IDENTITY: ${{ github.server_url }}/${{ github.workflow_ref }}
+          CERTIFICATE_OIDC_ISSUER: https://token.actions.githubusercontent.com
+        run: |
+          cosign verify "${IMAGE_REF}" \
+            --certificate-identity "${CERTIFICATE_IDENTITY}" \
+            --certificate-oidc-issuer "${CERTIFICATE_OIDC_ISSUER}"
+
+
       - name: Show published image
+        if: always()
         run: |
           echo "Pushed image:"
           echo "${{ steps.meta.outputs.image_uri }}:${{ steps.meta.outputs.short_sha }}"
